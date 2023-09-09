@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { getTasks } from "../../ApiService.tsx/ApiServices";
-import { Task } from "../../Models/Task";
-import { useNavigate } from "react-router-dom";
+// import { Task } from "../../Models/Task";
+import { Link, useNavigate } from "react-router-dom";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Collapse from "@mui/material/Collapse";
@@ -21,13 +21,40 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { log } from "console";
 export default function TaskManage() {
   const [open, setOpen] = useState(false);
   const redirect = useNavigate();
   useEffect(() => {
     getData();
   }, []);
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const initialTasks = [
+    {
+      title: "Task 1",
+      status: "DONE",
+      description: "Description for Task 1",
+      open: false,
+    },
+    {
+      title: "Task 2",
+      status: "DONE",
+      description: "Description for Task 2",
+      open: false,
+    },
+    {
+      title: "Task 3",
+      status: "DONE",
+      description: "Description for Task 3",
+      open: false,
+    },
+    {
+      title: "Task 4",
+      status: "DONE",
+      description: "Description for Task 4",
+      open: false,
+    },
+  ];
+  const [tasks, setTasks] = useState(initialTasks);
 
   const getData = async () => {
     try {
@@ -37,102 +64,99 @@ export default function TaskManage() {
       console.log(response.data);
     } catch (error) {}
   };
-  const clickhandler = () => {
-    setOpen(!open);
+
+  const toggleOpen = (index: any) => {
+    const updatedTasks = [...tasks];
+    console.log(updatedTasks[0].open);
+    updatedTasks[index].open = !updatedTasks[index].open;
+    setTasks(updatedTasks);
+    console.log(updatedTasks);
+  };
+  const Buttonstyle = {
+    backgroundColor: "#25accc",
+    color: "#fff",
+    "&:hover": {
+      backgroundColor: "#021E20",
+      color: "#fff",
+    },
+    marginTop: "10px",
+    fontWeight: 700,
   };
   return (
     <Box
       sx={{
         with: "100%",
-        height: "100vh",
         display: "flex",
         justifyContent: "center",
       }}>
       <CssBaseline />
-      <Container maxWidth="md" sx={{ backgroundColor: "#e7e3dc" }}>
+      <Container
+        maxWidth="md"
+        sx={{
+          backgroundColor: "#e7e3dc",
+          textAlign: "center",
+        }}>
         <List
           sx={{ marginTop: "20px", background: "#E0F4F5" }}
           component="nav"
           aria-labelledby="nested-list-subheader"
           subheader={
-            <ListSubheader component="div" id="nested-list-subheader">
+            <ListSubheader
+              component="div"
+              id="nested-list-subheader"
+              sx={{ fontSize: "20px", color: "#BC0000" }}>
               YOUR TASKS
             </ListSubheader>
           }>
-          <ListItem>
-            <ListItemText primary="title" secondary="status : DONE" />
-            <ListItemText primary="go to shop and buy somthing for child" />
-            <ListItemSecondaryAction>
-              <Button
-                onClick={clickhandler}
-                sx={{ backgroundColor: open ? "green" : " orange" }}
-                variant="contained"
-                endIcon={open ? <ExpandMore /> : <ExpandLess />}>
-                {open ? "Detail" : "close"}
-              </Button>
-            </ListItemSecondaryAction>
-          </ListItem>
-          {/* kak */}
-          <Collapse
-            in={open}
-            sx={{ backgroundColor: "inherit", marginBottom: "0" }}>
-            <Box sx={{ padding: "16px" }}>
-              <ListItemText
-                primary="Icon buttons are commonly found in app bars and toolbars.
-
-                Icons are also appropriate for toggle buttons that allow a single choice to be selected or deselected, such as adding or removing a star to an item."
-                sx={{
-                  backgroundColor: "black",
-                  padding: "10px",
-                  borderRadius: "10px",
-                  color: "white",
-                }}
-              />
+          {tasks.map((item, index) => (
+            <Box>
+              <ListItem>
+                <ListItemText
+                  primary={item.title}
+                  secondary={`status : ${item.status}`}
+                />
+                <ListItemText primary="go to shop and buy somthing for child" />
+                <ListItemSecondaryAction>
+                  <Button
+                    onClick={() => toggleOpen(index)}
+                    sx={{ backgroundColor: item.open ? "orange" : " green" }}
+                    variant="contained"
+                    endIcon={item.open ? <ExpandLess /> : <ExpandMore />}>
+                    {item.open ? "Close" : "Detail"}
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
+              <Collapse in={item.open}>
+                <ListItem sx={{ backgroundColor: "inherit" }}>
+                  <Box sx={{ padding: "16px" }}>
+                    <ListItemText
+                      primary={item.description}
+                      sx={{
+                        backgroundColor: "black",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        color: "white",
+                      }}
+                    />
+                  </Box>
+                </ListItem>
+              </Collapse>
             </Box>
-          </Collapse>
+          ))}
         </List>
+        <Box sx={{ display: "flex", justifyContent: "space-evenly" }}>
+          <Link to="/creat-task">
+            <Box sx={{ padding: "10px 5px 20px 5px" }}>
+              <Button sx={Buttonstyle}>Edit Task</Button>
+            </Box>
+          </Link>
+          <Link to="/your-other-route">
+            <Box sx={{ padding: "10px 5px 20px 5px" }}>
+              <Button sx={Buttonstyle}>Create New Task</Button>
+            </Box>
+          </Link>
+        </Box>
       </Container>
     </Box>
   );
-
-  /* {tasks.length > 0 ? (
-        <List
-          sx={{
-            width: "90%",
-          }}>
-          {tasks.map((item) => (
-            <ListItem
-              sx={{
-                border: "1px solid white",
-                backgroundColor: "#fff",
-                width: "100%",
-                borderRadius: "10px",
-              }}
-              key={item.id}>
-              <ListItemText primary={item.title} />
-            </ListItem>
-          ))}
-        </List>
-      ) : (
-        <Typography
-          sx={{
-            backgroundColor: "#fff",
-            width: "50%",
-            height: "60px",
-            borderRadius: "10px",
-            textAlign: "center",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "red",
-            marginTop: "40px",
-          }}
-          variant="h5">
-          {" "}
-          ⚠ Ther Is No Item To Show
-        </Typography>
-      )}
-      <Button variant="contained" color="success" onClick={creattask}>
-        create task
-      </Button> */
 }
