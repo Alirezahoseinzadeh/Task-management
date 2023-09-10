@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   TextField,
@@ -16,35 +16,66 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { createtask, getTasks } from "../../ApiService.tsx/ApiServices";
 
 interface Plan {
   title: string;
   description: string;
+  status: string;
+  id: number;
 }
 
 export default function CreatTask() {
   const [plans, setPlans] = useState<Plan[]>([]);
+  const [status, setStatus] = useState<"done" | "reject" | "">("");
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
+  const [editId, setId] = useState<number>(0);
   const [editedDescription, setEditedDescription] = useState("");
   const [editedIndex, setEditedIndex] = useState<number | null>(null);
 
   // Function to add a new plan to the list
-  const addPlan = () => {
-    if (newTitle.trim() !== "") {
-      setPlans([...plans, { title: newTitle, description: newDescription }]);
+  // const addPlan = () => {
+  //   if (newTitle.trim() !== "") {
+  //     setPlans([
+  //       ...plans,
+  //       { title: newTitle, description: newDescription, status: status },
+  //     ]);
+  //     setNewTitle("");
+  //     setNewDescription("");
+  //   }
+  // };
 
-      setNewTitle("");
-      setNewDescription("");
+  useEffect(() => {
+    getTask();
+  }, []);
+
+  const getTask = async () => {
+    try {
+      const response = await getTasks();
+      console.log(response.data);
+      setPlans(response.data.data);
+    } catch (error) {}
+  };
+
+  const addplans = async () => {
+    if (newTitle.trim() !== "") {
+      try {
+        const response = await createtask(newTitle, newDescription, status);
+        console.log(response);
+        const createdPlan = response.data;
+        await getTask();
+        setNewTitle("");
+        setNewDescription("");
+      } catch (error) {}
     }
   };
 
   // Function to open the edit modal
   const openEditModal = (index: number) => {
     const plan = plans[index];
-    console.log(plan);
     setEditedTitle(plan.title);
     setEditedDescription(plan.description);
     setEditedIndex(index);
@@ -58,6 +89,8 @@ export default function CreatTask() {
       updatedPlans[editedIndex as number] = {
         title: editedTitle,
         description: editedDescription,
+        status,
+        id: editId,
       };
       setPlans(updatedPlans);
       setOpenModal(false);
@@ -69,7 +102,17 @@ export default function CreatTask() {
     const updatedPlans = plans.filter((_, i) => i !== index);
     setPlans(updatedPlans);
   };
+  const donestatus = (index: number) => {
+    const upPlans = plans[index];
+    upPlans.status = "done";
+    console.log(upPlans);
+  };
 
+  const rejectstatus = (index: number) => {
+    const upPlans = plans[index];
+    upPlans.status = "reject";
+    console.log(upPlans);
+  };
   return (
     <Box sx={{ width: "100%" }}>
       <Container
@@ -148,7 +191,7 @@ export default function CreatTask() {
           <Box sx={{ width: "40px", height: "20px" }}>
             <Button
               variant="contained"
-              onClick={addPlan}
+              onClick={addplans}
               sx={{
                 backgroundColor: "#f2f2f2",
                 color: "black",
@@ -167,20 +210,26 @@ export default function CreatTask() {
           {plans.map((plan, index) => (
             <Paper elevation={5} sx={{ margin: "10px 0" }} key={index}>
               <ListItem>
-                <ListItemText primary={`title : ${plan.title}`} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    onClick={() => openEditModal(index)}
-                    sx={{ color: "#004de6" }}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => deletePlan(index)}
-                    sx={{ color: "#ff0000" }}>
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
+                <Box>
+                  <ListItemText primary={`title : ${plan.title}`} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      onClick={() => openEditModal(index)}
+                      sx={{ color: "#004de6" }}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => deletePlan(index)}
+                      sx={{ color: "#ff0000" }}>
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </Box>
               </ListItem>
+              <Box>
+                <Button onClick={() => donestatus(index)}>done</Button>
+                <Button onClick={() => rejectstatus(index)}>reject</Button>
+              </Box>
             </Paper>
           ))}
         </List>
