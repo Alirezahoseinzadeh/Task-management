@@ -33,15 +33,10 @@ export const getTasks = async () => {
   return instance.get("tasks");
 };
 
-export const createtask = async (
-  title: string,
-  description: string,
-  status: string
-) => {
+export const createtask = async (title: string, description: string) => {
   return instance.post("tasks", {
     title,
     description,
-    status,
   });
 };
 
@@ -51,10 +46,14 @@ export const updatetask = async (
   description: string,
   status: string
 ) => {
-  return instance.put(`task/${id}`, {
+  return instance.put(`tasks/${id}`, {
     title,
     description,
     status,
     id,
   });
+};
+
+export const deletetask = async (id: number) => {
+  return instance.delete(`tasks/${id}`);
 };

@@ -16,7 +16,13 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { createtask, getTasks } from "../../ApiService.tsx/ApiServices";
+import {
+  createtask,
+  deletetask,
+  getTasks,
+  updatetask,
+} from "../../ApiService.tsx/ApiServices";
+import { title } from "process";
 
 interface Plan {
   title: string;
@@ -27,14 +33,15 @@ interface Plan {
 
 export default function CreatTask() {
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [status, setStatus] = useState<"done" | "reject" | "">("");
+
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editId, setId] = useState<number>(0);
   const [editedDescription, setEditedDescription] = useState("");
-  const [editedIndex, setEditedIndex] = useState<number | null>(null);
+  const [editedId, setEditedId] = useState<number | null>(null);
+  const [editstatus, setEditstatus] = useState("");
 
   // Function to add a new plan to the list
   // const addPlan = () => {
@@ -63,7 +70,7 @@ export default function CreatTask() {
   const addplans = async () => {
     if (newTitle.trim() !== "") {
       try {
-        const response = await createtask(newTitle, newDescription, status);
+        const response = await createtask(newTitle, newDescription);
         console.log(response);
         const createdPlan = response.data;
         await getTask();
@@ -74,45 +81,59 @@ export default function CreatTask() {
   };
 
   // Function to open the edit modal
-  const openEditModal = (index: number) => {
-    const plan = plans[index];
+  const openEditModal = (plan: Plan) => {
+    setEditstatus(plan.status);
     setEditedTitle(plan.title);
     setEditedDescription(plan.description);
-    setEditedIndex(index);
+    setEditedId(plan.id);
     setOpenModal(true);
   };
 
   // Function to save the edited plan
-  const saveEditedPlan = () => {
+  const saveEditedPlan = async () => {
     if (editedTitle.trim() !== "") {
-      const updatedPlans = [...plans];
-      updatedPlans[editedIndex as number] = {
-        title: editedTitle,
-        description: editedDescription,
-        status,
-        id: editId,
-      };
-      setPlans(updatedPlans);
+      try {
+        await updatetask(editId, editedTitle, editedDescription, editstatus);
+        await getTask();
+      } catch (error) {}
+
       setOpenModal(false);
     }
   };
 
   // Function to delete a plan
-  const deletePlan = (index: number) => {
-    const updatedPlans = plans.filter((_, i) => i !== index);
-    setPlans(updatedPlans);
+  const deletePlan = async (id: number) => {
+    try {
+      const response = await deletetask(id);
+      await getTask();
+    } catch (error) {
+      alert("error has occured");
+    }
   };
-  const donestatus = (index: number) => {
-    const upPlans = plans[index];
-    upPlans.status = "done";
-    console.log(upPlans);
+  const donestatus = async (plan: Plan) => {
+    try {
+      const response = await updatetask(
+        plan.id,
+        plan.title,
+        plan.description,
+        "done"
+      );
+      console.log(response.data);
+      await getTask();
+    } catch (error) {}
   };
 
-  const rejectstatus = (index: number) => {
-    const upPlans = plans[index];
-    upPlans.status = "reject";
-    console.log(upPlans);
+  const rejectstatus = async (plan: Plan) => {
+    try {
+      const response = await updatetask(
+        plan.id,
+        plan.title,
+        plan.description,
+        "reject"
+      );
+    } catch (error) {}
   };
+
   return (
     <Box sx={{ width: "100%" }}>
       <Container
@@ -211,15 +232,18 @@ export default function CreatTask() {
             <Paper elevation={5} sx={{ margin: "10px 0" }} key={index}>
               <ListItem>
                 <Box>
-                  <ListItemText primary={`title : ${plan.title}`} />
+                  <ListItemText
+                    primary={`title : ${plan.title}`}
+                    secondary={`status : ${plan.status}`}
+                  />
                   <ListItemSecondaryAction>
                     <IconButton
-                      onClick={() => openEditModal(index)}
+                      onClick={() => openEditModal(plan)}
                       sx={{ color: "#004de6" }}>
                       <EditIcon />
                     </IconButton>
                     <IconButton
-                      onClick={() => deletePlan(index)}
+                      onClick={() => deletePlan(plan.id)}
                       sx={{ color: "#ff0000" }}>
                       <DeleteIcon />
                     </IconButton>
@@ -227,8 +251,8 @@ export default function CreatTask() {
                 </Box>
               </ListItem>
               <Box>
-                <Button onClick={() => donestatus(index)}>done</Button>
-                <Button onClick={() => rejectstatus(index)}>reject</Button>
+                <Button onClick={() => donestatus(plan)}>done</Button>
+                <Button onClick={() => rejectstatus(plan)}>reject</Button>
               </Box>
             </Paper>
           ))}
