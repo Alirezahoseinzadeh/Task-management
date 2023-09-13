@@ -33,27 +33,14 @@ interface Plan {
 
 export default function CreatTask() {
   const [plans, setPlans] = useState<Plan[]>([]);
-
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
-  const [editId, setId] = useState<number>(0);
+  // const [editId, setId] = useState<number>(0);
   const [editedDescription, setEditedDescription] = useState("");
-  const [editedId, setEditedId] = useState<number | null>(null);
+  const [editedId, setEditedId] = useState<number>(0);
   const [editstatus, setEditstatus] = useState("");
-
-  // Function to add a new plan to the list
-  // const addPlan = () => {
-  //   if (newTitle.trim() !== "") {
-  //     setPlans([
-  //       ...plans,
-  //       { title: newTitle, description: newDescription, status: status },
-  //     ]);
-  //     setNewTitle("");
-  //     setNewDescription("");
-  //   }
-  // };
 
   useEffect(() => {
     getTask();
@@ -62,8 +49,8 @@ export default function CreatTask() {
   const getTask = async () => {
     try {
       const response = await getTasks();
-      console.log(response.data);
       setPlans(response.data.data);
+      console.log(plans);
     } catch (error) {}
   };
 
@@ -71,7 +58,6 @@ export default function CreatTask() {
     if (newTitle.trim() !== "") {
       try {
         const response = await createtask(newTitle, newDescription);
-        console.log(response);
         const createdPlan = response.data;
         await getTask();
         setNewTitle("");
@@ -82,18 +68,20 @@ export default function CreatTask() {
 
   // Function to open the edit modal
   const openEditModal = (plan: Plan) => {
+    console.log(plan.id);
     setEditstatus(plan.status);
     setEditedTitle(plan.title);
     setEditedDescription(plan.description);
     setEditedId(plan.id);
     setOpenModal(true);
   };
+  console.log(editedId);
 
   // Function to save the edited plan
   const saveEditedPlan = async () => {
     if (editedTitle.trim() !== "") {
       try {
-        await updatetask(editId, editedTitle, editedDescription, editstatus);
+        await updatetask(editedId, editedTitle, editedDescription, editstatus);
         await getTask();
       } catch (error) {}
 

@@ -5,7 +5,7 @@ import { Route, Routes, BrowserRouter } from "react-router-dom";
 import SignIn from "./Pages/Login/Login";
 import TaskManage from "./Pages/Taskmng/TaskManage";
 import CreatTask from "./Pages/CreateTask/CreatTask";
-
+import PrivateRoutes from "./PrivateRoutes";
 function App() {
   return (
     <Box>
@@ -13,7 +13,10 @@ function App() {
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/" element={<SignIn />} />
-        <Route path="/task-mng" element={<TaskManage />} />
+        <Route
+          path="/task-mng"
+          element={<PrivateRoutes Component={TaskManage} />}
+        />
         <Route path="/creat-task" element={<CreatTask />} />
       </Routes>
     </Box>
